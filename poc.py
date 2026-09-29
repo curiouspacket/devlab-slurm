@@ -86,11 +86,10 @@ def init_secrets(path):
 
 def config(path):
     c = json.loads(path.read_text())
-    check(set(c) == {'repo_url', 'repo_commit', 'repo_dir', 'codex_version', 'codex', 'application', 'slurm'})
+    check(set(c) == {'repo_url', 'repo_commit', 'repo_dir', 'codex', 'application', 'slurm'})
     check('REPLACE' not in json.dumps(c))
     check(re.fullmatch(r'https://github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+\.git', c['repo_url']))
     check(re.fullmatch(r'[0-9a-f]{40}', c['repo_commit']))
-    check(c['codex_version'] == PINS['CODEX_VERSION'])
     check(Path(c['repo_dir']).is_absolute() and c['repo_dir'] != '/')
     for name in ('codex', 'application'):
         p = c[name]
@@ -133,10 +132,10 @@ def git():
             '-c', 'protocol.https.allow=always', '-c', 'submodule.recurse=false']
 
 
-def install_codex(c, state):
+def install_codex(state):
     # Installation is credential-free and separate: make tools / Docker build.
-    expected = 'codex-cli ' + c['codex_version']
-    check(run([str(TOOLS / 'codex/node_modules/.bin/codex'), '--version'], state) == expected)
+    # Codex CLI is intentionally unpinned; only confirm the binary runs.
+    check(run([str(TOOLS / 'codex/node_modules/.bin/codex'), '--version'], state).startswith('codex-cli '))
     check(run(['node', '--version'], state) == 'v' + PINS['NODE_VERSION'])
 
 
@@ -233,7 +232,7 @@ def setup(settings, state, secrets):
         values = read_secrets(secrets)
         event(state, run_id, step, 'complete')
         for step, task in (
-            ('codex', lambda: install_codex(c, state)),
+            ('codex', lambda: install_codex(state)),
             ('repository', lambda: repository(c, state, secrets)),
             ('providers', lambda: providers(c, state)),
             ('ssh', lambda: ssh(c, state, values))):

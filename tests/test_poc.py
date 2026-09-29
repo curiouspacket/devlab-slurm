@@ -22,7 +22,7 @@ class PoCTests(unittest.TestCase):
         poc.save(self.secrets, json.dumps({k: 'CANARY_' + k for k in poc.SECRET_KEYS}))
         self.c = {
             'repo_url': 'https://github.com/example/private.git', 'repo_commit': 'a' * 40,
-            'repo_dir': str(self.root / 'repo'), 'codex_version': poc.PINS['CODEX_VERSION'],
+            'repo_dir': str(self.root / 'repo'),
             'codex': {'base_url': 'https://api.example.com/v1', 'model': 'test'},
             'application': {'base_url': 'https://api.example.com/v1', 'model': 'test'},
             'slurm': {'host': 'login.example.com', 'port': 22, 'user': 'researcher',
@@ -62,7 +62,7 @@ class PoCTests(unittest.TestCase):
         self.assertEqual(poc.latest(self.state)['codex'], 'failed')
         self.assertNotIn('ready', poc.latest(self.state))
 
-    def test_existing_repo_and_pinned_codex_are_reused(self):
+    def test_existing_repo_is_reused_and_codex_binary_is_verified(self):
         (Path(self.c['repo_dir']) / '.git').mkdir(parents=True)
         edit = Path(self.c['repo_dir']) / 'user-edit'
         edit.write_text('keep this')
@@ -70,8 +70,9 @@ class PoCTests(unittest.TestCase):
             poc.repository(self.c, self.state, self.secrets)
         self.assertEqual(runner.call_count, 2)
         self.assertEqual(edit.read_text(), 'keep this')
-        with patch.object(poc, 'run', side_effect=['codex-cli ' + poc.PINS['CODEX_VERSION'], 'v' + poc.PINS['NODE_VERSION']]) as runner:
-            poc.install_codex(self.c, self.state)
+        # Codex CLI is unpinned: any version the binary reports is accepted.
+        with patch.object(poc, 'run', side_effect=['codex-cli 99.99.99', 'v' + poc.PINS['NODE_VERSION']]) as runner:
+            poc.install_codex(self.state)
         self.assertEqual(runner.call_count, 2)
 
     def test_generated_git_helper_scopes_credentials_and_cleans_up(self):
@@ -119,11 +120,6 @@ class PoCTests(unittest.TestCase):
             else:
                 self.assertEqual(child['OPENAI_API_KEY'], 'CANARY_application_api_key')
                 self.assertNotIn('CANARY_codex_api_key', values)
-
-    def test_version_drift_rejected(self):
-        self.c['codex_version'] = '1.2.3'
-        self.settings.write_text(json.dumps(self.c))
-        with self.assertRaises(ValueError): poc.config(self.settings)
 
     def test_validation_failure_redacted_and_setup_readiness_retained(self):
         poc.event(self.state, 'setup-run', 'ready', 'complete')

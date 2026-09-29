@@ -10,11 +10,12 @@ A small, credential-free ZIP plus a matching Dockerfile. Make exposes commands; 
 | Node.js | 22.23.3; bundled npm 10.9.9 |
 | uv | 0.12.20 |
 | CPython | 3.12.14 |
-| Codex CLI | 0.159.0, npm lockfile with package integrity hashes |
 | code-server base | 4.117.0, multi-architecture image digest in Dockerfile |
 | Debian package repository | Snapshot 20260928T000000Z, trixie + trixie-security |
 
 `versions.env` records the pins and SHA-256 values for NVM, Node and uv archives. The installer verifies those archives before extraction; uv uses its bundled managed-Python download metadata. `pyproject.toml`, `.python-version` and **uv.lock** pin Python. The bootstrap itself uses only Python's standard library, so its Python dependency list is intentionally empty; there is no second requirements.txt to drift. The application must carry its **own** dependency lockfile. Pin its 40-character Git commit in config.json.
+
+**Codex CLI is deliberately unpinned.** `make tools`/`bootstrap-tools.sh` installs `@openai/codex` fresh from npm at bootstrap time with no version pin and no vendored lockfile, so each DevLab picks up whatever is currently latest. `install_codex` only confirms the binary runs; it does not check for a specific version.
 
 Supported target: Debian 13 code-server, Linux x86_64 or aarch64, UID 1000/coder by default. For a GPU DevLab, build the image for the node's architecture, normally linux/amd64. This image is a development/control environment, not a CUDA training runtime; the application jobs run on Soperator.
 

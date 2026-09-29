@@ -75,13 +75,12 @@ step=python; report "$step" started
 report "$step" complete
 step=codex; report "$step" started
 mkdir -p "$TOOLS/codex"
-if ! cmp -s "$ROOT/codex/package-lock.json" "$TOOLS/codex/package-lock.json" ||
-   [[ $("$TOOLS/codex/node_modules/.bin/codex" --version 2>/dev/null || true) != "codex-cli $CODEX_VERSION" ]]; then
-  cp "$ROOT/codex/package.json" "$ROOT/codex/package-lock.json" "$TOOLS/codex/"
-  # No lifecycle scripts or inherited credentials; integrity comes from npm's lockfile.
+if [[ ! -x "$TOOLS/codex/node_modules/.bin/codex" ]]; then
+  # Intentionally unpinned: installs whatever @openai/codex currently resolves
+  # to on npm. No lifecycle scripts or inherited credentials.
   touch "$tmp/npm-global-config"
-  npm ci --prefix "$TOOLS/codex" --ignore-scripts --no-audit --no-fund     --cache "$tmp/npm-cache" --userconfig /dev/null --globalconfig "$tmp/npm-global-config" >/dev/null 2>&1
+  npm install --prefix "$TOOLS/codex" @openai/codex --ignore-scripts --no-audit --no-fund     --cache "$tmp/npm-cache" --userconfig /dev/null --globalconfig "$tmp/npm-global-config" >/dev/null 2>&1
 fi
-[[ $("$TOOLS/codex/node_modules/.bin/codex" --version 2>/dev/null) == "codex-cli $CODEX_VERSION" ]]
+[[ $("$TOOLS/codex/node_modules/.bin/codex" --version 2>/dev/null) == codex-cli\ * ]]
 report "$step" complete
 report toolchain complete
