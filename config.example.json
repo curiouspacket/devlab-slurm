@@ -1,0 +1,20 @@
+{
+  "repo_url": "https://github.com/REPLACE_ORG/REPLACE_REPO.git",
+  "repo_commit": "REPLACE_WITH_40_CHARACTER_COMMIT_SHA",
+  "repo_dir": "/home/coder/workspace/application",
+  "codex_version": "0.159.0",
+  "codex": {
+    "base_url": "https://api.openai.com/v1",
+    "model": "REPLACE_WITH_APPROVED_MODEL"
+  },
+  "application": {
+    "base_url": "https://api.tokenfactory.nebius.com/v1",
+    "model": "REPLACE_WITH_AVAILABLE_MODEL"
+  },
+  "slurm": {
+    "host": "REPLACE_LOGIN_HOST",
+    "port": 22,
+    "user": "REPLACE_USER",
+    "known_hosts_file": "slurm_known_hosts"
+  }
+}

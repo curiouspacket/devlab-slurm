@@ -1,0 +1,28 @@
+# Allowlist: only the entries below enter the Docker build context.
+# Everything else (local config, tokens, keys, checkouts, caches, .git) stays out.
+*
+
+!Dockerfile
+!Makefile
+!README.md
+!NPC_COMMANDS.md
+!TEST_PLAN.md
+!VALIDATION.md
+!versions.env
+!pyproject.toml
+!uv.lock
+!.python-version
+!poc.py
+!config.example.json
+
+!scripts
+!scripts/install-system.sh
+!scripts/bootstrap-tools.sh
+!scripts/image-entrypoint.sh
+!scripts/run.sh
+!scripts/launch-devlab.sh
+!scripts/package.py
+
+!tests
+!tests/test_poc.py
+!tests/test_launch.py
