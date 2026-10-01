@@ -7,7 +7,7 @@ TOOLS=${POC_TOOLS_DIR:-$HOME/.local/share/devlab-poc/toolchain}
 STATE=${POC_STATE_DIR:-$HOME/.local/share/devlab-poc/state}
 [[ -x "$TOOLS/uv/uv" ]] || { echo 'Run bash scripts/bootstrap-tools.sh first.' >&2; exit 1; }
 export POC_TOOLS_DIR="$TOOLS" POC_STATE_DIR="$STATE"
-export PATH="$TOOLS/uv:$TOOLS/nvm/versions/node/v$NODE_VERSION/bin:$TOOLS/codex/node_modules/.bin:/usr/local/bin:/usr/bin:/bin"
+export PATH="$TOOLS/uv:$TOOLS/nvm/versions/node/v$NODE_VERSION/bin:$TOOLS/codex/node_modules/.bin:$TOOLS/nebius:/usr/local/bin:/usr/bin:/bin"
 export UV_PYTHON_INSTALL_DIR="$TOOLS/python" UV_PYTHON_DOWNLOADS=never
 export UV_PROJECT_ENVIRONMENT="$STATE/venv" UV_CACHE_DIR="$STATE/uv-cache"
 export UV_NO_PROGRESS=1 UV_NO_CONFIG=1

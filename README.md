@@ -15,7 +15,7 @@ A small, credential-free ZIP plus a matching Dockerfile. Make exposes commands; 
 
 `versions.env` records the pins and SHA-256 values for NVM, Node and uv archives. The installer verifies those archives before extraction; uv uses its bundled managed-Python download metadata. `pyproject.toml`, `.python-version` and **uv.lock** pin Python. The bootstrap itself uses only Python's standard library, so its Python dependency list is intentionally empty; there is no second requirements.txt to drift. The application must carry its **own** dependency lockfile. Pin its 40-character Git commit in config.json.
 
-**Codex CLI is deliberately unpinned.** `make tools`/`bootstrap-tools.sh` installs `@openai/codex` fresh from npm at bootstrap time with no version pin and no vendored lockfile, so each DevLab picks up whatever is currently latest. `install_codex` only confirms the binary runs; it does not check for a specific version.
+**Codex CLI and the Nebius CLI are both deliberately unpinned.** `make tools`/`bootstrap-tools.sh` installs `@openai/codex` fresh from npm, and the `nebius` binary fresh from Nebius's own HTTPS storage (its current `stable` release), with no version pin and no checksum to verify against for either — each DevLab picks up whatever is currently latest. `install_codex` only confirms the Codex binary runs, not a specific version; the `nebius` step does the same.
 
 Supported target: Debian 13 code-server, Linux x86_64 or aarch64, UID 1000/coder by default. For a GPU DevLab, build the image for the node's architecture, normally linux/amd64. This image is a development/control environment, not a CUDA training runtime; the application jobs run on Soperator.
 
@@ -123,7 +123,10 @@ source versions.env
 export NVM_DIR="${POC_TOOLS_DIR:-$HOME/.local/share/devlab-poc/toolchain}/nvm"
 source "$NVM_DIR/nvm.sh"
 nvm use "$NODE_VERSION"
+export PATH="${POC_TOOLS_DIR:-$HOME/.local/share/devlab-poc/toolchain}/nebius:$PATH"
 ```
+
+The Nebius CLI (`nebius`) is installed by the same `make tools` step, unpinned, straight from Nebius's own storage — see above. It manages its own authentication, separate from this PoC's `secrets.json`: run `nebius profile create` once per DevLab to set up a profile before using it.
 
 ## Logs, scope and troubleshooting
 

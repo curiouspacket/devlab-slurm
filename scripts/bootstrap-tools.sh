@@ -9,8 +9,8 @@ fi
 source "$ROOT/versions.env"
 [[ $(uname -s) == Linux ]] || { echo 'Tool bootstrap supports Linux only.' >&2; exit 1; }
 case $(uname -m) in
-  x86_64) arch=x64; target=x86_64-unknown-linux-gnu; uv_sha=$UV_X64_SHA256; node_sha=$NODE_X64_SHA256 ;;
-  aarch64|arm64) arch=arm64; target=aarch64-unknown-linux-gnu; uv_sha=$UV_ARM64_SHA256; node_sha=$NODE_ARM64_SHA256 ;;
+  x86_64) arch=x64; nebius_arch=x86_64; target=x86_64-unknown-linux-gnu; uv_sha=$UV_X64_SHA256; node_sha=$NODE_X64_SHA256 ;;
+  aarch64|arm64) arch=arm64; nebius_arch=arm64; target=aarch64-unknown-linux-gnu; uv_sha=$UV_ARM64_SHA256; node_sha=$NODE_ARM64_SHA256 ;;
   *) echo 'Unsupported architecture.' >&2; exit 1 ;;
 esac
 for cmd in curl tar xz sha256sum git make ssh ssh-keygen; do
@@ -82,5 +82,17 @@ if [[ ! -x "$TOOLS/codex/node_modules/.bin/codex" ]]; then
   npm install --prefix "$TOOLS/codex" @openai/codex --ignore-scripts --no-audit --no-fund     --cache "$tmp/npm-cache" --userconfig /dev/null --globalconfig "$tmp/npm-global-config" >/dev/null 2>&1
 fi
 [[ $("$TOOLS/codex/node_modules/.bin/codex" --version 2>/dev/null) == codex-cli\ * ]]
+report "$step" complete
+step=nebius; report "$step" started
+if [[ ! -x "$TOOLS/nebius/nebius" ]]; then
+  # Intentionally unpinned, like Codex: Nebius does not publish a checksum
+  # for CLI binaries, so this installs the current "stable" release
+  # straight from Nebius's own HTTPS storage rather than pinning one here.
+  mkdir -p "$TOOLS/nebius"
+  nebius_version=$(curl --disable --fail --silent --show-error --location --proto '=https' --proto-redir '=https' https://storage.eu-north1.nebius.cloud/cli/release/stable)
+  curl --disable --fail --silent --show-error --location --proto '=https' --proto-redir '=https'     "https://storage.eu-north1.nebius.cloud/cli/release/$nebius_version/linux/$nebius_arch/nebius"     -o "$TOOLS/nebius/nebius"
+  chmod 0700 "$TOOLS/nebius/nebius"
+fi
+"$TOOLS/nebius/nebius" version >/dev/null
 report "$step" complete
 report toolchain complete
